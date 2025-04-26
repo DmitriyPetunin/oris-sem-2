@@ -1,5 +1,6 @@
 package ru.kpfu.itis.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,45 +13,61 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.client.RestTemplate;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
+    public BCryptPasswordEncoder bCryptPasswordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity httpSecurity,
-                                                       UserDetailsService userDetailsService) throws Exception {
-        return httpSecurity.getSharedObject(AuthenticationManagerBuilder.class)
-                .userDetailsService(userDetailsService)
-                .passwordEncoder(new BCryptPasswordEncoder())
-                .and()
-                .build();
-    }
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.csrf(csrf -> csrf.disable());
 
-    @Bean
-    SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
+        http.authorizeHttpRequests(auth -> auth
+                .requestMatchers("/index", "/auth/sign-up", "/auth/login", "/auth/verification").permitAll()
+                .requestMatchers("/profile").authenticated()
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .anyRequest().authenticated()
+        );
 
-                .authorizeHttpRequests(
-                        request -> request
-                                .requestMatchers("/**").permitAll()
-                                .anyRequest().authenticated()
+        http.formLogin(form -> form
+                .loginPage("/auth/login")
+                .loginProcessingUrl("/auth/login")
+                .defaultSuccessUrl("/profile")
+                .failureUrl("/auth/login?error=true")
+                .permitAll()
+        );
+
+        http.logout(logout -> logout
+                .logoutUrl("/auth/logout")
+                .logoutSuccessUrl("/auth/login")
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID")
+        );
+
+        http.oauth2Login(oauth2 -> oauth2
+                .loginPage("/auth/login")
+                .defaultSuccessUrl("/profile")
+                .failureUrl("/auth/login?error=true")
+        );
+
+        http.oauth2Login(oauth2 -> oauth2
+                .redirectionEndpoint(endpoint -> endpoint
+                        .baseUri("/auth/login/oauth2/code/*")
                 )
-                .formLogin(Customizer.withDefaults())
-                .httpBasic(Customizer.withDefaults());
+        );
+
         return http.build();
     }
 
     @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return webSecurity -> webSecurity.debug(true)
-                .ignoring()
-                .requestMatchers("/css/**", "/template/**", "/js/**", "/images/**", "/favicon.ico");
+    public RestTemplate restTemplate(){
+        return new RestTemplate();
     }
-
 }

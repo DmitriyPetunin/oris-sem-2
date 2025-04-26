@@ -1,10 +1,19 @@
 package ru.kpfu.itis.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
 import java.util.Set;
 
 @Entity
+@Builder
+@Getter
+@Setter
+@AllArgsConstructor
 @Table(name = "users")
 public class User {
     @Id
@@ -17,10 +26,20 @@ public class User {
     @Column
     private String name;
 
-    @Column
+    @Column(length = 64, nullable = false)
     private String password;
 
-    @ManyToMany
+    @Column
+    private String email;
+
+    @Column(length = 128)
+    private String verificationCode;
+
+    @Getter
+    @ColumnDefault("false")
+    private boolean enabled;
+
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_role",
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
@@ -35,37 +54,5 @@ public class User {
 
     public User() {
 
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Set<Role> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
     }
 }

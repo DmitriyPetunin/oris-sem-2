@@ -1,10 +1,10 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 
 plugins {
     id("java")
     id("application")
-    id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("war")
+    id("org.springframework.boot") version "3.4.4"
+    id("io.spring.dependency-management") version "1.1.7"
 }
 
 group = "ru.kpfu.itis"
@@ -35,12 +35,16 @@ dependencies {
     implementation("org.springframework.security:spring-security-web:$springSecurityVersion")
     implementation("org.springframework.security:spring-security-config:$springSecurityVersion")
     implementation("org.springframework.security:spring-security-taglibs:$springSecurityVersion")
+    implementation("org.springframework.boot:spring-boot-starter-freemarker")
+    implementation("org.springframework.boot:spring-boot-starter-mail")
     implementation("jakarta.servlet:jakarta.servlet-api:$jakartaVersion")
     implementation("org.hibernate:hibernate-core:$hibernateVersion")
     implementation("org.postgresql:postgresql:$postgresVersion")
     implementation("org.springframework.data:spring-data-jpa:3.4.4")
     implementation("com.mchange:c3p0:0.10.2")
     implementation("org.freemarker:freemarker:2.3.34")
+    implementation("org.projectlombok:lombok:")
+    annotationProcessor("org.projectlombok:lombok:1.18.30")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.18.3")
 
 
